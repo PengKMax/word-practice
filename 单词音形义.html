@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #f5f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 800px;
+            margin-bottom: 40px;
+        }
+
+        .word {
+            font-family: Arial;
+            font-size: 72px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .phonetic {
+            font-family: 'Times New Roman';
+            font-size: 32px;
+            color: #86868b;
+            text-align: center;
+        }
+
+        .meaning {
+            font-family: '微软雅黑';
+            font-size: 32px;
+            color: #1d1d1f;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .syllable-container {
+            background: #f5f5f7;
+            border-radius: 18px;
+            padding: 30px;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .line {
+            border-top: 3px solid #d2d2d7;
+            margin: 40px 0;
+            height: 60px;
+        }
+
+        .syllable-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .syllable {
+            background: #fff;
+            border: 2px solid #d2d2d7;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-family: Arial;
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vowel { color: #ff3b30; }
+        .consonant { color: #0071e3; }
+
+        button {
+            background: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .selected-syllables {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="word" onclick="toggleSyllables()">family</div>
+        <div class="phonetic">/fæmɪli/</div>
+        <div class="meaning">家庭</div>
+        
+        <div class="syllable-container">
+            <div class="selected-syllables" id="selectedArea"></div>
+            <div class="line"></div>
+            <div class="syllable-bank" id="syllableBank"></div>
+        </div>
+    </div>
+    
+    <button onclick="nextWord()">下一页</button>
+
+    <script>
+        const words = [
+            {
+                word: "family",
+                phonetic: "/fæmɪli/",
+                meaning: "家庭",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=family",
+                syllables: ["fam", "i", "ly"]
+            },
+            {
+                word: "house",
+                phonetic: "/haʊs/",
+                meaning: "房子",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=house",
+                syllables: ["hou", "se"]
+            },
+            {
+                word: "kitchen",
+                phonetic: "/ˈkɪtʃən/",
+                meaning: "厨房",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=kitchen",
+                syllables: ["kit", "chen"]
+            },
+            {
+                word: "bedroom",
+                phonetic: "/ˈbedruːm/",
+                meaning: "卧室",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=bedroom",
+                syllables: ["bed", "room"]
+            },
+            {
+                word: "living room",
+                phonetic: "/ˈlɪvɪŋ ruːm/",
+                meaning: "客厅",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=living%20room",
+                syllables: ["li", "ving", "ro", "om"]
+            },
+            {
+                word: "bathroom",
+                phonetic: "/ˈbæθruːm/",
+                meaning: "浴室",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=bathroom",
+                syllables: ["bath", "room"]
+            },
+            {
+                word: "sofa",
+                phonetic: "/ˈsəʊfə/",
+                meaning: "沙发",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=sofa",
+                syllables: ["so", "fa"]
+            },
+            {
+                word: "chair",
+                phonetic: "/tʃɛər/",
+                meaning: "椅子",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=chair",
+                syllables: ["ch", "air"]
+            },
+            {
+                word: "table",
+                phonetic: "/teɪbl/",
+                meaning: "桌子",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=table",
+                syllables: ["ta", "ble"]
+            },
+            {
+                word: "window",
+                phonetic: "/ˈwɪndoʊ/",
+                meaning: "窗户",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=window",
+                syllables: ["win", "dow"]
+            },
+            {
+                word: "door",
+                phonetic: "/dɔr/",
+                meaning: "门",
+                audio: "https://dict.youdao.com/dictvoice?type=0&audio=door",
+                syllables: ["do", "or"]
+            }
+        ];
+
+        let currentWordIndex = 0;
+        let isSplit = false;
+        let selectedSyllables = [];
+
+        function updateDisplay() {
+            const wordData = words[currentWordIndex];
+            document.querySelector('.word').innerHTML = wordData.word;
+            document.querySelector('.phonetic').textContent = wordData.phonetic;
+            document.querySelector('.meaning').textContent = wordData.meaning;
+            createSyllables(wordData.syllables);
+        }
+
+        function createSyllables(syllables) {
+            const bank = document.getElementById('syllableBank');
+            bank.innerHTML = '';
+            selectedSyllables = [];
+            document.getElementById('selectedArea').innerHTML = '';
+            
+            syllables.sort(() => Math.random() - 0.5).forEach(syllable => {
+                const div = document.createElement('div');
+                div.className = 'syllable';
+                div.textContent = syllable;
+                div.onclick = () => selectSyllable(div);
+                bank.appendChild(div);
+            });
+        }
+
+        function toggleSyllables() {
+            const wordDiv = document.querySelector('.word');
+            isSplit = !isSplit;
+            
+            // 播放音频
+            new Audio(words[currentWordIndex].audio).play();
+            
+            if(isSplit) {
+                const letters = [...wordDiv.textContent.replace(/ /g, '')];
+                wordDiv.innerHTML = letters.map(letter => 
+                    `<span class="${isVowel(letter) ? 'vowel' : 'consonant'}">${letter}</span>`
+                ).join('');
+                wordDiv.style.transform = 'scale(1.2)';
+            } else {
+                wordDiv.innerHTML = wordDiv.textContent;
+                wordDiv.style.transform = 'scale(1)';
+            }
+        }
+
+        function isVowel(letter) {
+            return 'aeiouAEIOU'.includes(letter);
+        }
+
+        function selectSyllable(element) {
+            if(!element.classList.contains('selected')) {
+                // 移动到选中区域
+                element.classList.add('selected');
+                const clone = element.cloneNode(true);
+                clone.onclick = () => deselectSyllable(clone);
+                document.getElementById('selectedArea').appendChild(clone);
+                selectedSyllables.push(element.textContent);
+                checkAnswer();
+            }
+        }
+
+        function deselectSyllable(element) {
+            // 移回音节库
+            element.remove();
+            const original = Array.from(document.querySelectorAll('.syllable'))
+                .find(s => s.textContent === element.textContent && !s.classList.contains('selected'));
+            if(original) original.classList.remove('selected');
+            selectedSyllables = selectedSyllables.filter(s => s !== element.textContent);
+        }
+
+        function checkAnswer() {
+            const currentWord = words[currentWordIndex].word.replace(/ /g, '');
+            const userAnswer = selectedSyllables.join('');
+            
+            if(userAnswer === currentWord) {
+                showSuccess();
+            } else if(userAnswer.length === currentWord.length) {
+                showError();
+            }
+        }
+
+        function showSuccess() {
+            document.querySelectorAll('.syllable').forEach(el => {
+                el.style.transition = 'all 0.5s';
+                el.style.transform = 'scale(0)';
+                setTimeout(() => el.remove(), 500);
+            });
+        }
+
+        function showError() {
+            document.querySelector('.syllable-container').classList.add('shake');
+            setTimeout(() => {
+                document.querySelector('.syllable-container').classList.remove('shake');
+                createSyllables(words[currentWordIndex].syllables);
+            }, 500);
+        }
+
+        function nextWord() {
+            currentWordIndex = (currentWordIndex + 1) % words.length;
+            document.querySelector('.word').style.transform = 'scale(1)';
+            updateDisplay();
+        }
+
+        // 初始化显示
+        updateDisplay();
+    </script>
+</body>
+</html>
